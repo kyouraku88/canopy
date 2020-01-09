@@ -90,24 +90,18 @@ util.assign(Builder.prototype, {
 
     syntaxNodeClass_: function() {
         this._newBuffer('TreeNode');
-
-        // var imports = ['ArrayList', 'EnumMap', 'Iterator', 'List', 'Map'];
-        // for (var i = 0, n = imports.length; i < n; i++)
-        // this._line('import java.util.' + imports[i]);
-
         var name = 'TreeNode';
-
-        this._line('data class ' + name + ': Iterable<' + name + '>(');
+        this._line('class ' + name + ': Iterable<' + name + '>(');
         this._indent(function(builder) {
             builder._line('val text = "",');
             builder._line('val offset = 0,');
             builder._line('val elements = mutableListOf<' + name + '>(),');
             builder._line('val labelled = mutableMapOf<Label, ' + name + '>()');
-            builder._line(') {');
-
+        });
+        this._line(') {');
+        this._indent(function(builder) {
             builder._newline();
-            builder._line('fun get(Label key): ' + name + '? = labelled[key] {');
-
+            builder._line('fun get(Label key): ' + name + '? = labelled[key]');
             builder._newline();
             builder._line('override fun iterator() = elements.iterator()');
         });
@@ -243,21 +237,17 @@ util.assign(Builder.prototype, {
         this._newline();
         this._line('class ' + name + ': ' + parent + '(');
         new Builder(this, name)._indent(block, context);
-        this._line('}')
     },
 
     constructor_: function(args, block, context) {
         this._line('val text: String,');
         this._line('val offset: Int,');
         this._line('val elements: List<TreeNode>');
-        this._line('): TreeNode(text, offset, elements) {');
+        this._line('): TreeNode(text, offset, elements, mapOf(');
         this._indent(function(builder) {
-            builder._line('init {');
-            builder._indent(function(builder) {
-                block.call(context, builder);
-            });
-            builder._line('}');
+            block.call(context, builder);
         });
+        this._line('))');
     },
 
     method_: function(name, args, block, context) {
@@ -297,7 +287,7 @@ util.assign(Builder.prototype, {
         var builder = this;
         while (builder._parent) builder = builder._parent;
         builder._labels[name] = true;
-        this._line('labelled[Label.' + name + '] = ' + value);
+        this._line('Label.' + name + ' to ' + value);
     },
 
     localVars_: function(vars) {
