@@ -5,6 +5,7 @@ var Compiler = require('./compiler');
 module.exports = {
   builders: {
     java:       require('./builders/java'),
+    kotlin:     require('./builders/kotlin'),
     javascript: require('./builders/javascript'),
     python:     require('./builders/python'),
     ruby:       require('./builders/ruby')

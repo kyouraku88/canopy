@@ -9,6 +9,7 @@ var canopy = require('../lib/canopy'),
 var BUILDERS = {};
 
 BUILDERS.java                     = canopy.builders.java;
+BUILDERS.kotlin                   = canopy.builders.kotlin;
 BUILDERS.js = BUILDERS.javascript = canopy.builders.javascript;
 BUILDERS.py = BUILDERS.python     = canopy.builders.python;
 BUILDERS.rb = BUILDERS.ruby       = canopy.builders.ruby;
