@@ -46,7 +46,7 @@ util.assign(Builder.prototype, {
     _newBuffer: function(name) {
         this._currentBuffer = this.filename.replace(/\.peg$/, this.pathsep + name + '.kt');
         var namespace = this.filename.replace(/\.peg$/, '').split(this.pathsep);
-        this._buffers[this._currentBuffer] = 'package ' + namespace.join('.') + ';\n\n';
+        this._buffers[this._currentBuffer] = 'package ' + namespace.join('.') + '\n\n';
     },
 
     _write: function(string) {
@@ -91,17 +91,17 @@ util.assign(Builder.prototype, {
     syntaxNodeClass_: function() {
         this._newBuffer('TreeNode');
         var name = 'TreeNode';
-        this._line('class ' + name + ': Iterable<' + name + '>(');
+        this._line('open class ' + name + '(');
         this._indent(function(builder) {
-            builder._line('val text = "",');
-            builder._line('val offset = 0,');
-            builder._line('val elements = mutableListOf<' + name + '>(),');
-            builder._line('val labelled = mutableMapOf<Label, ' + name + '>()');
+            builder._line('open val text: String = "",');
+            builder._line('open val offset: Int = 0,');
+            builder._line('open val elements: List<' + name + '> = listOf(),');
+            builder._line('val labelled: Map<Label, ' + name + '> = mapOf()');
         });
-        this._line(') {');
+        this._line('): Iterable<' + name + '> {');
         this._indent(function(builder) {
             builder._newline();
-            builder._line('fun get(Label key): ' + name + '? = labelled[key]');
+            builder._line('fun get(key: Label): ' + name + '? = labelled[key]');
             builder._newline();
             builder._line('override fun iterator() = elements.iterator()');
         });
@@ -112,7 +112,7 @@ util.assign(Builder.prototype, {
 
     grammarModule_: function(actions, block, context) {
         this._newBuffer('CacheRecord');
-        this._line('data class CacheRecord (val node: TreeNode, tail: Int)');
+        this._line('data class CacheRecord (val node: TreeNode, val tail: Int)');
 
         this._newBuffer('Actions');
         this._line('interface Actions {');
@@ -127,12 +127,12 @@ util.assign(Builder.prototype, {
         this._newline();
         this._line('abstract class Grammar(');
         this._indent(function(builder) {
-            builder._line('val inputSize');
-            builder._line('var offset = 0');
-            builder._line('var failure = 0');
-            builder._line('open val input: String');
-            builder._line('var expected: mutableListOf<String>()');
-            builder._line('val cache: mutableMapOf<Label, Map<Integer, CacheRecord>>()');
+            builder._line('val inputSize: Int = 0,');
+            builder._line('var offset: Int = 0,');
+            builder._line('var failure: Int = 0,');
+            builder._line('open val input: String,');
+            builder._line('var expected: List<String> = listOf(),');
+            builder._line('val cache: MutableMap<Label, MutableMap<Int, CacheRecord>> = mutableMapOf(),');
             builder._line('open val actions: Actions');
         });
         this._line(') {')
@@ -235,14 +235,14 @@ util.assign(Builder.prototype, {
 
     class_: function(name, parent, block, context) {
         this._newline();
-        this._line('class ' + name + ': ' + parent + '(');
+        this._line('class ' + name + ' (');
         new Builder(this, name)._indent(block, context);
     },
 
     constructor_: function(args, block, context) {
-        this._line('val text: String,');
-        this._line('val offset: Int,');
-        this._line('val elements: List<TreeNode>');
+        this._line('override val text: String,');
+        this._line('override val offset: Int,');
+        this._line('override val elements: List<TreeNode>');
         this._line('): TreeNode(text, offset, elements, mapOf(');
         this._indent(function(builder) {
             block.call(context, builder);
@@ -266,9 +266,9 @@ util.assign(Builder.prototype, {
             address = temp.address,
             offset  = temp.index;
 
-        this.assign_('val rule', 'cache[Label.' + name + ']');
+        this.assign_('var rule', 'cache[Label.' + name + ']');
         this.if_('rule == null', function(builder) {
-            builder.assign_('rule', 'mutableMapOf<Integer, CacheRecord>()');
+            builder.assign_('rule', 'mutableMapOf()');
             builder._line('cache[Label.' + name + '] = rule');
         });
         this.if_('offset in rule', function(builder) {
